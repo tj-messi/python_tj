@@ -17,7 +17,11 @@
 
 from typing import Optional
 import json
-from lx3_2 import read_json_file
+
+def read_json_file(filename: Optional[str] = 'course.txt'):
+    with open(filename, 'r', encoding='UTF-8') as file:
+        data = json.load(file)#拿到json文件
+    return data
 
 
 def json_query(query_str: Optional[str]):
