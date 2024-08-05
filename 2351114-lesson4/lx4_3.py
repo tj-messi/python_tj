@@ -21,19 +21,17 @@ import time
 class tj_bbs:
     def __init__(self, wait_time=3):
         self.bbs_browser = webdriver.Chrome()
-        self.login_page = 'http://cyr985.net3v.club/bbs/login.asp'
         self.post_page = 'http://cyr985.net3v.club/bbs/topic.asp?id=4891&boardid=6&TB=1'
         self.wait_time = wait_time
 
     def auto_login(self, username, password):
-        self.bbs_browser.get(self.login_page)
+        self.bbs_browser.get(self.post_page)
         try:
             # 等待“登录”按钮可见并点击
             login_button = WebDriverWait(self.bbs_browser, self.wait_time).until(
-                EC.element_to_be_clickable((By.LINK_TEXT, '登录'))
+                EC.element_to_be_clickable((By.XPATH, '//input[@type="submit" and @value="登陆"]'))
             )
             login_button.click()
-
             # 等待用户名和密码输入框可见
             username_input = WebDriverWait(self.bbs_browser, self.wait_time).until(
                 EC.presence_of_element_located(
@@ -46,17 +44,18 @@ class tj_bbs:
             username_input.send_keys(username)
             password_input.send_keys(password)
 
-            # 点击登录按钮
-            login_submit_button = self.bbs_browser.find_element(By.CSS_SELECTOR, 'input[type="submit"]')
-            login_submit_button.click()
+            # 等待“登录”按钮可见并点击
+            login_button = WebDriverWait(self.bbs_browser, self.wait_time).until(
+                EC.element_to_be_clickable((By.XPATH, '//input[@type="submit" and @value="登陆"]'))
+            )
+            login_button.click()
 
             # 等待页面加载
             time.sleep(self.wait_time)
         except Exception as e:
             print(f"Error during login: {e}")
 
-    def auto_post(self, bbs_content):
-        self.bbs_browser.get(self.post_page)
+    def auto_post(self):
         try:
             # 等待回复框可见
             reply_box = WebDriverWait(self.bbs_browser, self.wait_time).until(
@@ -64,10 +63,10 @@ class tj_bbs:
             )
 
             # 输入回复内容
-            reply_box.send_keys(bbs_content)
+            reply_box.send_keys('2351114 zhu jun ze')
 
-            # 点击提交按钮
-            submit_button = self.bbs_browser.find_element(By.CSS_SELECTOR, 'input[type="submit"]')
+            # 点击“ok发表”按钮
+            submit_button = self.bbs_browser.find_element(By.CSS_SELECTOR, 'input[type="submit"][value="ok发表"]')
             submit_button.click()
 
             # 等待页面加载
@@ -78,7 +77,7 @@ class tj_bbs:
 
 # 示例使用
 if __name__ == "__main__":
-    bbs = tj_bbs(wait_time=5)
+    bbs = tj_bbs(wait_time=3)
     bbs.auto_login('tj_messi', '1398212202')
-    bbs.auto_post('This is an automated post.')
+    bbs.auto_post()
     bbs.bbs_browser.quit()
