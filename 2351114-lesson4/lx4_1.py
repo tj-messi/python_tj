@@ -46,4 +46,3 @@ driver.quit()
 # 打印输出
 for item in datalist:
     print(f"Title: {item['title']}, Artist: {item['artist']}")
-
