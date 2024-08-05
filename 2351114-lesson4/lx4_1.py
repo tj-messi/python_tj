@@ -1,3 +1,5 @@
+#2351114 朱俊泽 大数据科学与技术
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -9,7 +11,7 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")  # 无头模式，不打开浏览器窗口
 
 # 设置ChromeDriver路径
-chrome_driver_path = '/path/to/chromedriver'  # 请替换为你的ChromeDriver路径
+chrome_driver_path = 'D:\py3.12'  # 请替换为你的ChromeDriver路径
 service = Service(chrome_driver_path)
 
 # 初始化WebDriver
