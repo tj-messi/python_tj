@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 import xlwt
 
 
-# 抓取百度热搜的前十条文字
 def fetch_baidu_hot_search():
     url = 'https://top.baidu.com/board'
     headers = {
@@ -18,11 +17,10 @@ def fetch_baidu_hot_search():
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # 找到热搜榜，对应的 <div class_="content_1YWBm">
+    # <div class_="content_1YWBm">
     hot_search_list = soup.find_all('div', class_='c-single-text-ellipsis')
-
-    # 提取前十条热搜文字
     top_ten_hot_search = []
+    #隔着一次输入一次，因为热搜榜有两个热搜条，全部读入就会有问题
     id=1
     for item in hot_search_list[:20]:
         if (id % 2 == 1):
@@ -34,17 +32,11 @@ def fetch_baidu_hot_search():
 
     return top_ten_hot_search
 
-
-# 将抓取的热搜写入Excel文件
 def write_to_excel(hot_list, filename):
     workbook = xlwt.Workbook(encoding='utf-8')
     worksheet = workbook.add_sheet('百度热搜')
-
-    # 写入表头
     worksheet.write(0, 0, '排名')
     worksheet.write(0, 1, '热搜关键词')
-
-    # 写入数据
     for index, keyword in enumerate(hot_list):
         worksheet.write(index + 1, 0, index + 1)
         worksheet.write(index + 1, 1, keyword)
@@ -55,4 +47,3 @@ def write_to_excel(hot_list, filename):
 if __name__ == '__main__':
     hot_list = fetch_baidu_hot_search()
     write_to_excel(hot_list, 'hot_list.xls')
-    print("数据已成功写入 hot_list.xls 文件。")
