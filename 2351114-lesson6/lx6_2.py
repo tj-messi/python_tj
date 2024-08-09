@@ -10,44 +10,31 @@
 
 import random
 
-# 定义游戏规则
-def play_game(jack_choice, rose_prob):
-    rose_choice = random.choices([0, 1], weights=[1 - rose_prob, rose_prob])[0]
-    if jack_choice == 0 and rose_choice == 0:  # 都是正面
-        return 3, -3
-    elif jack_choice == 1 and rose_choice == 1:  # 都是反面
-        return 1, -1
+# 定义Rose和Jack的策略
+rose_prob_heads = 3 / 8
+jack_prob_heads = 1 / 8
+
+# 初始化输赢计数
+rose_earnings = 0
+jack_earnings = 0
+
+# 模拟100万次博弈
+for _ in range(1000000):
+    # 随机决定Rose和Jack的硬币结果
+    rose_coin = random.random() < rose_prob_heads
+    jack_coin = random.random() < jack_prob_heads
+
+    # 根据硬币结果计算输赢
+    if rose_coin and jack_coin:  # 都是正面
+        jack_earnings += 3
+        rose_earnings -=3
+    elif not rose_coin and not jack_coin:  # 都是反面
+        jack_earnings += 1
+        rose_earnings -=1
     else:  # 一正一反
-        return -2, 2
+        rose_earnings += 2
+        jack_earnings -=2
 
-# 计算Rose的纳什均衡策略
-def calculate_nash_equilibrium():
-    # 设Rose选择正面的概率为p，反面的概率为1-p
-    # 计算Jack选择正面和反面时的期望收益
-    # Jack选择正面时的期望收益：3p + (-2)(1-p) = 3p - 2 + 2p = 5p - 2
-    # Jack选择反面时的期望收益：(-2)p + 1(1-p) = -2p + 1 - p = 1 - 3p
-    # 令两者相等，求解p
-    p = (1 + 2) / (5 + 3)
-    return p
-
-# 模拟100万次对局
-def simulate_games(num_games, rose_prob):
-    jack_total = 0
-    rose_total = 0
-    for _ in range(num_games):
-        jack_choice = random.choice([0, 1])  # Jack随机选择正面或反面
-        jack_result, rose_result = play_game(jack_choice, rose_prob)
-        jack_total += jack_result
-        rose_total += rose_result
-    return jack_total, rose_total
-
-# 主函数
-def main():
-    num_games = 1000000
-    rose_prob = calculate_nash_equilibrium()
-    jack_total, rose_total = simulate_games(num_games, rose_prob)
-    print(f"Jack的总收益: {jack_total}")
-    print(f"Rose的总收益: {rose_total}")
-
-if __name__ == "__main__":
-    main()
+# 输出最终结果
+print(f"Rose的最终收益: {rose_earnings}元")
+print(f"Jack的最终收益: {jack_earnings}元")
