@@ -103,7 +103,7 @@ class st_lesson:
                 # 检查在当前时间段内是否存在多门不同课程
                 if isinstance(current_courses, str) and current_courses:
                     course_list = current_courses.split(', ')
-                    if len(course_list) > 1:  
+                    if len(course_list) > 1:
                         conflicts.append(
                             f"[{self.st_schedule_list[0][j]}{self.st_schedule_list[i][0]}有课程冲突：{', '.join(course_list)}]")
 
