@@ -9,12 +9,10 @@ First_page      #字符串值https://news.tongji.edu.cn/info/1003/88134.htm'
 auto_replace（） #自动打开first_page对应网页，并将标题里的覃海洋更换为自己的名字
 speak_text(text) #自动朗读text
 """
-
 import time
 import pyttsx3
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-
 
 class tj_web:
     def __init__(self):
