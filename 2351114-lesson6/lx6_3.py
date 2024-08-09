@@ -34,69 +34,93 @@ Your name的选课冲突有：[周一上午一二节['高数', '德语']][周三
 import pandas as pd
 
 
-class StLesson:
+class st_lesson:
     def __init__(self, st_no):
         self.st_no = st_no
-        self.st_name = "XXX"
-        self.st_py = "XXX"
-        self.st_sex = "XXX"
+        self.st_name = ""
+        self.st_py = ""
+        self.st_sex = ""
         self.st_course_list = []
-        self.schedule = pd.DataFrame(columns=["上课时间", "周一", "周二", "周三", "周四", "周五"])
+        self.st_schedule_list = [
+            ["上课时间", "周一", "周二", "周三", "周四", "周五"],
+            ["上午一二节", [], [], [], [], []],
+            ["上午三四节", [], [], [], [], []],
+            ["下午一二节", [], [], [], [], []],
+            ["下午三四节", [], [], [], [], []]
+        ]
+
         self.load_data_from_excel()
 
     def load_data_from_excel(self):
-        df_info = pd.read_excel('xuanke.xls', sheet_name=0)  # 学生信息表
-        df_selection = pd.read_excel('xuanke.xls', sheet_name=1)  # 选课情况表
-        df_schedule = pd.read_excel('xuanke.xls', sheet_name=2)  # 课程时间表
+        # 读取表1
+        df1 = pd.read_excel('xuanke.xls', sheet_name=0)
+        student_data = df1[df1['学号'] == int(self.st_no)].iloc[0]
 
-        # 提取学生信息
-        student_info = df_info[df_info['学号'] == int(self.st_no)]
-        if not student_info.empty:
-            self.st_name = student_info.iloc[0]['姓名']
-            self.st_py = student_info.iloc[0]['英文姓名']  # 假设有这个字段
-            self.st_sex = student_info.iloc[0]['性别']
-        else:
-            print(f"学号 {self.st_no} 未在学生信息表中找到。")
-            return
+        self.st_name = student_data['姓名']
+        self.st_py = student_data['英文姓名']
+        self.st_sex = student_data['性别']
 
-        # 获取选课情况
-        student_selection = df_selection[df_selection.iloc[:, 0] == int(self.st_no)]
-        if not student_selection.empty:
-            course_columns = df_selection.columns[1:]
-            self.st_course_list = [course for course, selected in zip(course_columns, student_selection.iloc[0, 1:]) if selected == '√']
-        else:
-            print(f"学号 {self.st_no} 未在选课表中找到选课信息。")
-            return
+        # 读取表2
+        df2 = pd.read_excel('xuanke.xls', sheet_name=1)
+        student_courses = df2[df2['学号'] == int(self.st_no)]
+        self.st_course_list = student_courses.columns[student_courses.iloc[0] == '√'].tolist()
 
-        # 从课程时间表中读取课表信息
-        self.schedule = df_schedule
+        # 读取表3
+        df3 = pd.read_excel('xuanke.xls', sheet_name=2)
+
+        # 使用 iterrows() 来遍历所有行
+        for _, row in df3.iterrows():
+            time_slot = row['上课时间']  # 确保获取上课时间
+            index = self._get_time_index(time_slot)
+            if index == -1:
+                continue  # 确保时间索引有效
+            for day in range(1, 6):  # 从周一到周五
+                courses = row.iloc[day]  # 使用 iloc 根据位置访问
+                if isinstance(courses, str):  # 确保读取到字符串
+                    # 逐个检查并添加课程
+                    for course in courses.split(','):
+                        if course.strip() in self.st_course_list:
+                            self.st_schedule_list[index][day].append(course.strip())
+
+    def _get_time_index(self, time_slot):
+        # 帮助方法，将上课时间映射到二维数组的索引
+        mapping = {
+            "上午一二节": 1,
+            "上午三四节": 2,
+            "下午一二节": 3,
+            "下午三四节": 4
+        }
+        return mapping.get(time_slot, -1)
 
     def display_schedule(self):
-        print(f"学号：{self.st_no} 姓名：{self.st_name} 的课表")
-        for row in self.schedule.itertuples(index=False):
-            print(" | ".join(str(item).ljust(20) for item in row))
+        print(f"学号：{self.st_no:<20} 姓名：{self.st_name:<20} 的课表")
 
-    def mark_selected_courses(self):
-        # 标记所选课程在时间表中的位置
+        # 打印表头信息（周几）
+        header_row = self.st_schedule_list[0]
+        print("".join(f"{str(cell):<20}" for cell in header_row))  # 课程时间标题行为20宽
+
+        # 打印课程信息
+        for row in self.st_schedule_list[1:]:  # 从第一行课程信息开始
+            courses = ', '.join([str(course) for course in row[1] if course])  # 仅合并非空课程
+            print(f"{row[0]:<20}{courses:<20}")  # 每个单元格宽度固定为20个字符，左对齐
+
+    def check_conflict(self):
+        conflicts = []
         for course in self.st_course_list:
-            for i in range(len(self.schedule)):
-                # 找到课程在表三中的位置
-                if course in self.schedule.columns:
-                    j = self.schedule.columns.get_loc(course)  # 找到列索引
-                    if self.schedule.iloc[i, j] == course:  # 确认该位置为课程
-                        time_slot = self.schedule.iloc[i, 0]  # 获取对应的上课时间
-                        print(f"课程 '{course}' 的上课时间：{time_slot} 在表上标记")
+            for i in range(1, len(self.st_schedule_list)):
+                for j in range(1, len(self.st_schedule_list[i])):
+                    current_courses = self.st_schedule_list[i][j]
+                    if course in current_courses:
+                        # 找到对应的时间并记录
+                        conflicts.append(f"[{self.st_schedule_list[0][j]}{self.st_schedule_list[i][0]}[{course}]]")
 
-                        # 输出标记后的表格
-                        self.schedule.iloc[i, j] = course  # 在课程位置加上课程名
-
-        # 输出标记后的课程时间表
-        print("\n标记后的课程时间表：")
-        for row in self.schedule.itertuples(index=False):
-            print(" | ".join(str(item).ljust(20) for item in row))
+        if conflicts:
+            print(f"{self.st_name}的选课冲突有：{' '.join(conflicts)}")
+        else:
+            print(f"{self.st_name}没有选课冲突")
 
 
 # 示例使用
-student = StLesson('2351114')
+student = st_lesson('2351114')
 student.display_schedule()
-student.mark_selected_courses()
+student.check_conflict()

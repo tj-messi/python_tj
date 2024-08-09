@@ -9,26 +9,19 @@
 '''
 
 import random
-
-# 定义Rose和Jack的策略
 rose_prob_heads = 3 / 8
 jack_prob_heads = 1 / 8
-
-# 初始化输赢计数
 rose_earnings = 0
 jack_earnings = 0
 
 # 模拟100万次博弈
 for _ in range(1000000):
-    # 随机决定Rose和Jack的硬币结果
     rose_coin = random.random() < rose_prob_heads
     jack_coin = random.random() < jack_prob_heads
-
-    # 根据硬币结果计算输赢
-    if rose_coin and jack_coin:  # 都是正面
+    if rose_coin and jack_coin: #正面
         jack_earnings += 3
         rose_earnings -=3
-    elif not rose_coin and not jack_coin:  # 都是反面
+    elif not rose_coin and not jack_coin: #反面
         jack_earnings += 1
         rose_earnings -=1
     else:  # 一正一反
