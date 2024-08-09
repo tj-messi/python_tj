@@ -33,7 +33,6 @@ Your name的选课冲突有：[周一上午一二节['高数', '德语']][周三
 '''
 import pandas as pd
 
-
 class st_lesson:
     def __init__(self, st_no):
         self.st_no = st_no
@@ -43,10 +42,10 @@ class st_lesson:
         self.st_course_list = []
         self.st_schedule_list = [
             ["上课时间", "周一", "周二", "周三", "周四", "周五"],
-            ["上午一二节", [], [], [], [], []],
-            ["上午三四节", [], [], [], [], []],
-            ["下午一二节", [], [], [], [], []],
-            ["下午三四节", [], [], [], [], []]
+            ["上午一二节", "", "", "", "", ""],
+            ["上午三四节", "", "", "", "", ""],
+            ["下午一二节", "", "", "", "", ""],
+            ["下午三四节", "", "", "", "", ""]
         ]
 
         self.load_data_from_excel()
@@ -62,25 +61,24 @@ class st_lesson:
 
         # 读取表2
         df2 = pd.read_excel('xuanke.xls', sheet_name=1)
-        student_courses = df2[df2['学号'] == int(self.st_no)]
-        self.st_course_list = student_courses.columns[student_courses.iloc[0] == '√'].tolist()
+        student_courses = df2[df2['学号'] == int(self.st_no)].iloc[0]
+        self.st_course_list = student_courses.index[student_courses == '√'].tolist()
 
         # 读取表3
         df3 = pd.read_excel('xuanke.xls', sheet_name=2)
 
         # 使用 iterrows() 来遍历所有行
         for _, row in df3.iterrows():
-            time_slot = row['上课时间']  # 确保获取上课时间
+            time_slot = row['上课时间']
             index = self._get_time_index(time_slot)
             if index == -1:
-                continue  # 确保时间索引有效
+                continue  # 如果时间索引无效，跳过
+
             for day in range(1, 6):  # 从周一到周五
-                courses = row.iloc[day]  # 使用 iloc 根据位置访问
+                courses = row.iloc[day] # 使用 iloc 确保按位置获取
                 if isinstance(courses, str):  # 确保读取到字符串
-                    # 逐个检查并添加课程
-                    for course in courses.split(','):
-                        if course.strip() in self.st_course_list:
-                            self.st_schedule_list[index][day].append(course.strip())
+                    course_list = [course.strip() for course in courses.split(',')]  # 分割课程并去除空格
+                    self.st_schedule_list[index][day] = ", ".join(course for course in course_list if course in self.st_course_list)
 
     def _get_time_index(self, time_slot):
         # 帮助方法，将上课时间映射到二维数组的索引
@@ -101,8 +99,7 @@ class st_lesson:
 
         # 打印课程信息
         for row in self.st_schedule_list[1:]:  # 从第一行课程信息开始
-            courses = ', '.join([str(course) for course in row[1] if course])  # 仅合并非空课程
-            print(f"{row[0]:<20}{courses:<20}")  # 每个单元格宽度固定为20个字符，左对齐
+            print("".join(f"{str(cell):<20}" for cell in row))  # 每个单元格宽度固定为20个字符，左对齐
 
     def check_conflict(self):
         conflicts = []
@@ -110,7 +107,7 @@ class st_lesson:
             for i in range(1, len(self.st_schedule_list)):
                 for j in range(1, len(self.st_schedule_list[i])):
                     current_courses = self.st_schedule_list[i][j]
-                    if course in current_courses:
+                    if course in current_courses.split(', '):
                         # 找到对应的时间并记录
                         conflicts.append(f"[{self.st_schedule_list[0][j]}{self.st_schedule_list[i][0]}[{course}]]")
 
