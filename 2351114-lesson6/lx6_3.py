@@ -110,7 +110,8 @@ class st_lesson:
                     if course in current_courses.split(', '):
                         # 找到对应的时间并记录
                         conflicts.append(f"[{self.st_schedule_list[0][j]}{self.st_schedule_list[i][0]}[{course}]]")
-
+                    else:
+                        continue
         if conflicts:
             print(f"{self.st_name}的选课冲突有：{' '.join(conflicts)}")
         else:
@@ -121,3 +122,5 @@ class st_lesson:
 student = st_lesson('2351114')
 student.display_schedule()
 student.check_conflict()
+
+
